@@ -13,11 +13,13 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -32,7 +34,9 @@ import com.ekzakh.composetest.R
 import com.ekzakh.composetest.ui.theme.ComposeTestTheme
 
 @Composable
-fun InstagramProfileCard() {
+fun InstagramProfileCard(viewModel: MainViewModel) {
+    val isFollowing = viewModel.isFollowing.observeAsState(initial = false)
+
     Card(
         shape = RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp),
         colors = CardDefaults.cardColors(MaterialTheme.colorScheme.background),
@@ -71,17 +75,31 @@ fun InstagramProfileCard() {
                 text = "www.android.com",
                 fontSize = 14.sp,
             )
-            Button(
-                shape = RoundedCornerShape(16.dp),
-                onClick = { },
-            ) {
-                Text(
-                    text = "Follow",
-                    modifier = Modifier
-                        .background(MaterialTheme.colorScheme.primary),
-                )
-            }
+            FollowButton(
+                isFollowing = isFollowing.value,
+                clickListener = { viewModel.changeFollowing() },
+            )
         }
+    }
+}
+
+@Composable
+fun FollowButton(
+    isFollowing: Boolean,
+    clickListener: () -> Unit,
+) {
+    Button(
+        shape = RoundedCornerShape(16.dp),
+        onClick = { clickListener.invoke() },
+        colors = ButtonDefaults.buttonColors(
+            containerColor = if (isFollowing) {
+                MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
+            } else {
+                MaterialTheme.colorScheme.primary
+            },
+        ),
+    ) {
+        Text(text = if (isFollowing) "Unfollow" else "Follow")
     }
 }
 
@@ -108,7 +126,7 @@ private fun UserStatistics(title: String, value: String) {
 @Composable
 fun InstagramProfileCardLight() {
     ComposeTestTheme(darkTheme = false) {
-        InstagramProfileCard()
+        InstagramProfileCard(MainViewModel())
     }
 }
 
@@ -116,6 +134,6 @@ fun InstagramProfileCardLight() {
 @Composable
 fun InstagramProfileCardDark() {
     ComposeTestTheme(darkTheme = true) {
-        InstagramProfileCard()
+        InstagramProfileCard(MainViewModel())
     }
 }
